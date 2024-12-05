@@ -1,0 +1,286 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\User\Dropbox\KTH\Research\Philantropy 2022\STATA PNAS\4. Final versions\STATA PNAS Compact\log-filer/6. Regressions.log
+  log type:  text
+ opened on:   3 Dec 2024, 17:29:10
+
+. 
+. //* Load dataset
+. use "dta-filer\Dataset_publications", clear
+
+. 
+. //* Set as panel
+. xtset ID Year, yearly
+       panel variable:  ID (strongly balanced)
+        time variable:  Year, 2001 to 2015
+                delta:  1 year
+
+. 
+. //* Winsorize financing and patents, pctile 1 and 99 and save dataset
+. winsor2 W_Pubs, replace cuts(1 99)
+
+. winsor2 Pub_x, replace cuts(1 99)
+
+. winsor2 tot_ln, replace cuts(1 99)
+
+. winsor2 OthGov_share, replace cuts(1 99)
+
+. winsor2 Corp_share, replace cuts(1 99)
+
+. winsor2 Noprof_share, replace cuts(1 99)
+
+. 
+. //* Define dummy variables
+. local category "Subcat_1 Subcat_2 Subcat_4"     // Base: IT (Subcat 1: BIOMED, Subcat 2: ENG, Subcat 3: IT, Subcat 4: OTH)
+
+. local year " Year_3 Year_4 Year_5 Year_6 Year_7 Year_8 Year_9 Year_10 Year_11 Year_12 Year_13 Year_14 Year_15 Year_16" // Base: 2015
+
+. 
+. //* Regression 
+. 
+. *** NO SPILLOVER
+. 
+. * Two-year lag
+. nbreg F2.W_Pubs tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap `year' `category' if Nofund!=1, nolog iterate (100)
+note: you are responsible for interpretation of non-count dep. variable
+note: Year_3 omitted because of collinearity
+note: Year_4 omitted because of collinearity
+note: Year_15 omitted because of collinearity
+note: Year_16 omitted because of collinearity
+
+Negative binomial regression                    Number of obs     =      1,039
+                                                LR chi2(18)       =    2531.55
+Dispersion     = mean                           Prob > chi2       =     0.0000
+Log likelihood = -5475.0448                     Pseudo R2         =     0.1878
+
+------------------------------------------------------------------------------
+   F2.W_Pubs |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      tot_ln |   .6059571    .017571    34.49   0.000     .5715186    .6403955
+OthGov_share |   -.040822   .0933749    -0.44   0.662    -.2238333    .1421894
+  Corp_share |  -1.567232   .3432542    -4.57   0.000    -2.239998   -.8944665
+Noprof_share |   .0875555   .3384977     0.26   0.796    -.5758878    .7509988
+   Ln_HumCap |   1.599307   .0715824    22.34   0.000     1.459008    1.739606
+      Year_3 |          0  (omitted)
+      Year_4 |          0  (omitted)
+      Year_5 |   .2240785   .0908883     2.47   0.014     .0459407    .4022163
+      Year_6 |   .0826809   .0894333     0.92   0.355    -.0926052     .257967
+      Year_7 |   .1092081    .090066     1.21   0.225     -.067318    .2857342
+      Year_8 |   .0600205   .0889967     0.67   0.500    -.1144099    .2344509
+      Year_9 |   .0638496    .088919     0.72   0.473    -.1104285    .2381276
+     Year_10 |   .0182755   .0890812     0.21   0.837    -.1563204    .1928714
+     Year_11 |   .0433339   .0896454     0.48   0.629    -.1323678    .2190355
+     Year_12 |   .0657376   .0885372     0.74   0.458    -.1077922    .2392673
+     Year_13 |   .0664283   .0896985     0.74   0.459    -.1093775    .2422341
+     Year_14 |   -.018838   .0874644    -0.22   0.829    -.1902652    .1525891
+     Year_15 |          0  (omitted)
+     Year_16 |          0  (omitted)
+    Subcat_1 |   1.373556   .0545077    25.20   0.000     1.266723    1.480389
+    Subcat_2 |   .2047818   .0551372     3.71   0.000     .0967148    .3128489
+    Subcat_4 |   .3733381   .0581685     6.42   0.000     .2593301    .4873462
+       _cons |   -2.88342   .2055569   -14.03   0.000    -3.286304   -2.480536
+-------------+----------------------------------------------------------------
+    /lnalpha |   -1.06993   .0474213                     -1.162874   -.9769859
+-------------+----------------------------------------------------------------
+       alpha |   .3430326    .016267                      .3125865     .376444
+------------------------------------------------------------------------------
+LR test of alpha=0: chibar2(01) = 3.0e+04              Prob >= chibar2 = 0.000
+
+. outreg2 using "output\Pubs_2Y.doc", replace ctitle (2 year lag) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap)
+output\Pubs_2Y.doc
+dir : seeout
+
+. outreg2 using "output\Pubs_2Y_Dummies.doc", replace ctitle (2 year lag) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap `category' `year')
+output\Pubs_2Y_Dummies.doc
+dir : seeout
+
+. 
+. * Four-year lag
+. nbreg F4.W_Pubs tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap `category' `year' if Nofund!=1, nolog iterate (100)
+note: you are responsible for interpretation of non-count dep. variable
+note: Year_13 omitted because of collinearity
+note: Year_14 omitted because of collinearity
+note: Year_15 omitted because of collinearity
+note: Year_16 omitted because of collinearity
+
+Negative binomial regression                    Number of obs     =      1,018
+                                                LR chi2(18)       =    2481.87
+Dispersion     = mean                           Prob > chi2       =     0.0000
+Log likelihood = -5394.5519                     Pseudo R2         =     0.1870
+
+------------------------------------------------------------------------------
+   F4.W_Pubs |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      tot_ln |   .6033097   .0173953    34.68   0.000     .5692154    .6374039
+OthGov_share |   -.054376   .0926448    -0.59   0.557    -.2359566    .1272045
+  Corp_share |   -1.62373   .3136195    -5.18   0.000    -2.238413   -1.009047
+Noprof_share |  -.3417494   .3152809    -1.08   0.278    -.9596887    .2761898
+   Ln_HumCap |   1.445982   .0671667    21.53   0.000     1.314338    1.577627
+    Subcat_1 |   1.486195   .0538282    27.61   0.000     1.380694    1.591696
+    Subcat_2 |    .264364   .0549095     4.81   0.000     .1567433    .3719847
+    Subcat_4 |   .4161654    .058439     7.12   0.000     .3016269    .5307038
+      Year_3 |   .2723135   .0938109     2.90   0.004     .0884474    .4561795
+      Year_4 |   .1682006   .0918928     1.83   0.067     -.011906    .3483072
+      Year_5 |   .0911084   .0910017     1.00   0.317    -.0872517    .2694685
+      Year_6 |   .0035646   .0894064     0.04   0.968    -.1716686    .1787979
+      Year_7 |    .014788   .0899296     0.16   0.869    -.1614708    .1910467
+      Year_8 |   .0128503   .0892099     0.14   0.885    -.1619978    .1876984
+      Year_9 |   .0016028   .0891569     0.02   0.986    -.1731415    .1763472
+     Year_10 |  -.0345115   .0891491    -0.39   0.699    -.2092405    .1402175
+     Year_11 |   .0020901   .0900227     0.02   0.981    -.1743511    .1785313
+     Year_12 |   .0272227   .0889442     0.31   0.760    -.1471047    .2015501
+     Year_13 |          0  (omitted)
+     Year_14 |          0  (omitted)
+     Year_15 |          0  (omitted)
+     Year_16 |          0  (omitted)
+       _cons |  -2.294116   .2002411   -11.46   0.000    -2.686582   -1.901651
+-------------+----------------------------------------------------------------
+    /lnalpha |  -1.084441   .0479702                      -1.17846   -.9904206
+-------------+----------------------------------------------------------------
+       alpha |   .3380909   .0162183                      .3077522    .3714204
+------------------------------------------------------------------------------
+LR test of alpha=0: chibar2(01) = 2.6e+04              Prob >= chibar2 = 0.000
+
+. outreg2 using "output\Pubs_4Y.doc", append ctitle (4 year lag) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap)
+output\Pubs_4Y.doc
+dir : seeout
+
+. outreg2 using "output\Pubs_4Y_Dummies.doc", append ctitle (4 year lag) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap `category' `year')
+output\Pubs_4Y_Dummies.doc
+dir : seeout
+
+. 
+. *** SPILLOVER
+. 
+. * Two-year lag
+. nbreg F2.W_Pubs  tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap F2.Pub_x `year' `category' if Nofund!=1, nolog iterate (100)
+note: you are responsible for interpretation of non-count dep. variable
+note: Year_3 omitted because of collinearity
+note: Year_4 omitted because of collinearity
+note: Year_15 omitted because of collinearity
+note: Year_16 omitted because of collinearity
+
+Negative binomial regression                    Number of obs     =      1,039
+                                                LR chi2(19)       =    2535.63
+Dispersion     = mean                           Prob > chi2       =     0.0000
+Log likelihood = -5473.0053                     Pseudo R2         =     0.1881
+
+------------------------------------------------------------------------------
+   F2.W_Pubs |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      tot_ln |   .6134707   .0178786    34.31   0.000     .5784293    .6485122
+OthGov_share |  -.0810111   .0951287    -0.85   0.394      -.26746    .1054377
+  Corp_share |  -1.583746   .3418823    -4.63   0.000    -2.253823   -.9136687
+Noprof_share |   .0287468   .3404636     0.08   0.933    -.6385496    .6960431
+   Ln_HumCap |   1.605694    .071402    22.49   0.000     1.465749    1.745639
+             |
+       Pub_x |
+         F2. |   .0009242   .0004657     1.98   0.047     .0000115     .001837
+             |
+      Year_3 |          0  (omitted)
+      Year_4 |          0  (omitted)
+      Year_5 |   .2333384   .0908549     2.57   0.010     .0552661    .4114106
+      Year_6 |   .0929431   .0894171     1.04   0.299    -.0823113    .2681974
+      Year_7 |    .120158   .0900552     1.33   0.182     -.056347     .296663
+      Year_8 |   .0691518   .0889446     0.78   0.437    -.1051763      .24348
+      Year_9 |   .0715346    .088844     0.81   0.421    -.1025963    .2456656
+     Year_10 |   .0253984   .0889873     0.29   0.775    -.1490134    .1998102
+     Year_11 |   .0487992   .0895071     0.55   0.586    -.1266315    .2242299
+     Year_12 |   .0691686    .088383     0.78   0.434    -.1040589     .242396
+     Year_13 |   .0682851   .0895276     0.76   0.446    -.1071857    .2437559
+     Year_14 |   -.018754   .0873071    -0.21   0.830    -.1898728    .1523648
+     Year_15 |          0  (omitted)
+     Year_16 |          0  (omitted)
+    Subcat_1 |   1.330584   .0581986    22.86   0.000     1.216517    1.444651
+    Subcat_2 |   .2006838   .0550983     3.64   0.000     .0926931    .3086745
+    Subcat_4 |   .3692713   .0581448     6.35   0.000     .2553097     .483233
+       _cons |  -2.915296   .2056581   -14.18   0.000    -3.318379   -2.512214
+-------------+----------------------------------------------------------------
+    /lnalpha |  -1.074479   .0474742                     -1.167527   -.9814313
+-------------+----------------------------------------------------------------
+       alpha |   .3414756   .0162113                      .3111355    .3747743
+------------------------------------------------------------------------------
+LR test of alpha=0: chibar2(01) = 3.0e+04              Prob >= chibar2 = 0.000
+
+. outreg2 using "output\Pubs_2Y_Access.doc", append ctitle (2 year lag) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap F2.Pub_x)
+output\Pubs_2Y_Access.doc
+dir : seeout
+
+. outreg2 using "output\Pubs_2Y_Access_Dummies.doc", append ctitle (2 year lag, SO) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap F2.Pub_x `category' `year')
+output\Pubs_2Y_Access_Dummies.doc
+dir : seeout
+
+. 
+. * Four-year lag
+. nbreg F4.W_Pubs tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap F4.Pub_x `year' `category' if Nofund!=1, nolog iterate (100)
+note: you are responsible for interpretation of non-count dep. variable
+note: Year_13 omitted because of collinearity
+note: Year_14 omitted because of collinearity
+note: Year_15 omitted because of collinearity
+note: Year_16 omitted because of collinearity
+
+Negative binomial regression                    Number of obs     =      1,018
+                                                LR chi2(19)       =    2493.77
+Dispersion     = mean                           Prob > chi2       =     0.0000
+Log likelihood = -5388.6032                     Pseudo R2         =     0.1879
+
+------------------------------------------------------------------------------
+   F4.W_Pubs |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      tot_ln |   .6184948   .0177579    34.83   0.000     .5836898    .6532997
+OthGov_share |  -.1297071   .0943573    -1.37   0.169    -.3146441    .0552299
+  Corp_share |    -1.6899   .3119186    -5.42   0.000    -2.301249   -1.078551
+Noprof_share |  -.4601925   .3177676    -1.45   0.148    -1.083005    .1626205
+   Ln_HumCap |   1.445882   .0665501    21.73   0.000     1.315446    1.576317
+             |
+       Pub_x |
+         F4. |   .0016112   .0004812     3.35   0.001      .000668    .0025544
+             |
+      Year_3 |   .2908404   .0934979     3.11   0.002     .1075878     .474093
+      Year_4 |   .1801872   .0914832     1.97   0.049     .0008834     .359491
+      Year_5 |   .1027906   .0905977     1.13   0.257    -.0747777    .2803588
+      Year_6 |   .0170329   .0890254     0.19   0.848    -.1574538    .1915195
+      Year_7 |   .0281109   .0895147     0.31   0.753    -.1473347    .2035565
+      Year_8 |   .0218213   .0887543     0.25   0.806    -.1521339    .1957766
+      Year_9 |   .0095562   .0887162     0.11   0.914    -.1643243    .1834367
+     Year_10 |  -.0263449   .0887189    -0.30   0.767    -.2002306    .1475409
+     Year_11 |   .0075733   .0895598     0.08   0.933    -.1679607    .1831074
+     Year_12 |   .0285897   .0884657     0.32   0.747    -.1447999    .2019792
+     Year_13 |          0  (omitted)
+     Year_14 |          0  (omitted)
+     Year_15 |          0  (omitted)
+     Year_16 |          0  (omitted)
+    Subcat_1 |   1.413521   .0571334    24.74   0.000     1.301541      1.5255
+    Subcat_2 |   .2588401   .0546853     4.73   0.000     .1516589    .3660212
+    Subcat_4 |   .4076627    .058241     7.00   0.000     .2935123     .521813
+       _cons |  -2.317553   .1987367   -11.66   0.000     -2.70707   -1.928036
+-------------+----------------------------------------------------------------
+    /lnalpha |  -1.097432   .0481012                     -1.191709   -1.003156
+-------------+----------------------------------------------------------------
+       alpha |   .3337269   .0160527                      .3037018    .3667204
+------------------------------------------------------------------------------
+LR test of alpha=0: chibar2(01) = 2.6e+04              Prob >= chibar2 = 0.000
+
+. outreg2 using "output\Pubs_4Y_Access.doc", append ctitle (4 year lag) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap F4.Pub_x)
+output\Pubs_4Y_Access.doc
+dir : seeout
+
+. outreg2 using "output\Pubs_4Y_Access_Dummies.doc", append ctitle (4 year lag, SO) dec(6) keep (tot_ln OthGov_share Corp_share Noprof_share Ln_HumCap F4.Pub_x `category' `year')
+output\Pubs_4Y_Access_Dummies.doc
+dir : seeout
+
+. 
+end of do-file
+
+. do "C:\Users\User\AppData\Local\Temp\STD7108_000000.tmp"
+
+. * This is a subprogram
+. * 
+. * Updated:      2024-12-03
+. 
+. //* Set STATA version
+. version 15
+
+. clear matrix
+
+. capture log close
